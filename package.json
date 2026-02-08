@@ -1,0 +1,17 @@
+{
+  "name": "first_project",
+  "version": "1.0.0",
+  "description": "learning through hands-on project making, with the help of chai and code; lets go!!",
+  "keywords": [
+    "javascript",
+    "backend",
+    "porject"
+  ],
+  "license": "ISC",
+  "author": "Parnami Ji",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

@@ -20,5 +20,14 @@ app.use(express.static("public")) //static -> i wish to store images, pdf on my 
 //so we create this static public folder
 app.use(cookieParser())
 
+//routes
+import userRouter from './routes/user.routes.js'
 
+//routes declaration
+//app.get( se kaam ho raha tha, as in basic app we were writing rouetes and controllers in here only)
+//ab routes ko separate kar diya hai, middleware use karna hoga // app.use()
+
+app.use("/api/v1/users", userRouter) //jaise hi user ayega, control chala jayega userRouter pe
+
+//http://localhost:8000/api/v1/users/register
 export { app }

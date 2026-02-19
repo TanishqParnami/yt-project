@@ -14,6 +14,9 @@ const registerUser = asyncHandler(async (req, res) => {
   //remove password and Refresh Token field from response
   //check for user creation => return res if true
 
+  //console.log("BODY DATA:", req.body);
+  //console.log("FILES DATA:", req.files);
+
   const { fullName, email, username, password } = req.body;
   console.log("email: ", email);
   console.log("fullName: ", fullName);
@@ -26,7 +29,7 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "All fields are required");
   }
 
-  const existingUser = User.findOne({
+  const existingUser = await User.findOne({
     $or: [{ username }, { email }],
   });
 
@@ -34,19 +37,30 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(409, "User already exists with this email or password!");
   }
 
-  const avatarLocalpath = req.files?.avatar[0]?.path;
-  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+ // 1. Get the path from Multer (Log shows this exists!)
+const avatarLocalPath = req.files?.avatar?.[0]?.path;
 
-  if (!avatarLocalpath) {
-    throw new ApiError(400, "Avatar file is required");
-  }
+ let coverImageLocalPath;
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path
+    }
 
-  const avatar = await uploadOnCloudinary(avatarLocalpath);
-  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+// 2. Extra log to be 100% sure we are passing the right string
+console.log("PATH BEING SENT TO CLOUDINARY: ", avatarLocalPath);
 
-  if (!avatar) {
-    throw new ApiError(400, "Avatar file is required");
-  }
+if (!avatarLocalPath) {
+    throw new ApiError(400, "Avatar file is missing in request");
+}
+
+// 3. UPLOAD TO CLOUDINARY
+// Ensure you use 'avatarLocalPath' (Capital P) to match exactly
+const avatar = await uploadOnCloudinary(avatarLocalPath);
+const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+
+// 4. CHECK IF CLOUDINARY RETURNED THE URL
+if (!avatar) {
+    throw new ApiError(400, "Cloudinary upload failed! Check your .env keys.");
+}
 
   //database me entry
   const user = await User.create({
@@ -60,14 +74,14 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const createdUser = await User.findById(user._id).select(
     "-password -refreshToken"
-  )
-  if(!createdUser){
-    throw new ApiError(500, "Something went wrong while registering the user!")
+  );
+  if (!createdUser) {
+    throw new ApiError(500, "Something went wrong while registering the user!");
   }
 
-  return res.status(201).json(
-    new ApiResponse(200, createdUser, "User register successfully!")
-  )
+  return res
+    .status(201)
+    .json(new ApiResponse(200, createdUser, "User register successfully!"));
 });
 
 export { registerUser };

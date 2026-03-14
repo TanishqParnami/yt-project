@@ -169,7 +169,7 @@ const logoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
     {
-      $unset: {
+      $set: {
         refreshToken: 1, //this removes the field from document
       },
     },
@@ -180,7 +180,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 
   const options = {
     httpOnly: true,
-    secure: true,
+    secure: true, //only server side can control
   };
 
   return res
@@ -190,4 +190,4 @@ const logoutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User logged Out"));
 });
 
-export { registerUser, loginUser };
+export { registerUser, loginUser, logoutUser };

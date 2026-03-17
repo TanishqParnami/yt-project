@@ -302,6 +302,12 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Avatar file is missing")
   }
 
+  const existingUser = await User.findById(req.user?._id);
+
+  if(existingUser?.avatar?.public_id){
+    await cloudinary.uploader.destroy(existingUser.avatar.public_id);
+  }
+
   const avatar = await uploadOnCloudinary(avatarLocalPath)
 
   if(!avatar){
@@ -311,17 +317,20 @@ const updateUserAvatar = asyncHandler(async (req, res) => {
   const user = await User.findByIdAndUpdate(
     req.user?._id,
     {
-      $set:{
-        avatar: avatar.url
+      $set: {
+        avatar: {
+          url: avatar.url,
+          public_id: avatar.public_id
+        }
       }
     },
     {new: true}
-  ).select("password")
+  ).select("-password")
 
   return res
   .status(200)
   .json(
-    new ApiResponse(200, user, "Avatar Image updated successfully")
+    new ApiResponse(200, user, "Avatar Image  updated successfully")
   )
 })
 
@@ -346,7 +355,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
       }
     },
     {new: true}
-  ).select("password")
+  ).select("-password")
 
   return res
   .status(200)

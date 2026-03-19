@@ -51,18 +51,18 @@ const userSchema = new Schema(
 );
 
 //pre hook works as middleware
-//before data is saved, after call
-// ek kaam kardo => like password encrypt kardo
-userSchema.pre("save", async function() { // Removed 'next' here
-    if (!this.isModified("password")) return; // No return next()
+//To automatically hash passwords before saving users,
+// ensuring security without repeating logic in controllers.
+userSchema.pre("save", async function () {
+  if (!this.isModified("password")) return; //password is hashed only when changed
+  //avoids rehashing on every save
 
-    try {
-        this.password = await bcrypt.hash(this.password, 10);
-    } catch (error) {
-        throw error; // Mongoose will catch this as the error
-    }
+  try {
+    this.password = await bcrypt.hash(this.password, 10);
+  } catch (error) {
+    throw error; // Mongoose will catch this as the error
+  }
 });
-
 
 userSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
@@ -71,16 +71,16 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 userSchema.methods.generateAccessToken = function (password) {
   return jwt.sign(
     {
-        _id: this.id,
-        email: this.email,
-        username: this.username,
-        fullName: this.fullName
+      _id: this.id,
+      email: this.email,
+      username: this.username,
+      fullName: this.fullName,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {
-        expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
     }
-  )
+  );
 };
 //REFRESH TOKEN HAS LESSER INFO
 //ONLY _id FOR NOW
@@ -88,13 +88,13 @@ userSchema.methods.generateAccessToken = function (password) {
 userSchema.methods.generateRefreshToken = async function (password) {
   return jwt.sign(
     {
-        _id: this.id,
+      _id: this.id,
     },
     process.env.REFRESH_TOKEN_SECRET,
     {
-        expiresIn: process.env.REFRESH_TOKEN_EXPIRY
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
     }
-)
+  );
 };
 
 export const User = mongoose.model("User", userSchema);

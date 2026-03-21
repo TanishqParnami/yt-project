@@ -75,4 +75,4 @@ const getVideoByID = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, video, "Video fetched successfully"));
 });
 
-export { publishVideo, getAllVideo };
+export { publishVideo, getAllVideo, getVideoByID };

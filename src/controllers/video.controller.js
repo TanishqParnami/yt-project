@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { deleteFromCloudinary } from "../utils/deleteCloudinary.js";
 
 const publishVideo = asyncHandler(async (req, res) => {
   const { title, description } = req.body;
@@ -42,6 +43,9 @@ const publishVideo = asyncHandler(async (req, res) => {
     videoFile: videoUpload.url,
     thumbnail: thumbnailUpload.url,
     owner: req.user._id,
+
+    videoPublicId: videoUpload.public_id,
+    thumbnailPublicId: thumbnailUpload.public_id,
   });
 
   return res
@@ -75,4 +79,83 @@ const getVideoByID = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, video, "Video fetched successfully"));
 });
 
-export { publishVideo, getAllVideo, getVideoByID };
+const updateVideo = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+  const { title, description } = req.body;
+
+  if (!isValidObjectId(videoId)) {
+    throw new ApiError(400, "Invalid video ID");
+  }
+
+  const video = await Video.findById(videoId);
+
+  if (!video) {
+    throw new ApiError(404, "Video not found");
+  }
+
+  if (video.owner.toString() !== req.user._id.toString()) {
+    throw new ApiError(403, "Unauthorized");
+  }
+
+  let thumbnailUrl = video.thumbnail;
+
+  const thumbnailLocalPath = req.files?.thumbnail?.[0]?.path;
+
+  if (thumbnailLocalPath) {
+    if (!thumbnailLocalPath.match(/\.(jpg|jpeg|png)$/i)) {
+      throw new ApiError(400, "Thumbnail must be an image");
+    }
+
+    const uploaded = await uploadOnCloudinary(thumbnailLocalPath);
+
+    if (!uploaded?.url) {
+      throw new ApiError(500, "Thumbnnail upload failed");
+    }
+
+    thumbnailUrl = uploaded.url;
+  }
+
+  video.title = title?.trim() || video.title;
+  video.description = description?.trim() || video.description;
+  video.thumbnail = thumbnailUrl;
+
+  await video.save();
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, video, "Video updated successfully"));
+});
+
+const deleteVideo = asyncHandler(async (req, res) => {
+  const { videoId } = req.params;
+
+  if (!isValidObjectId(videoId)) {
+    throw new ApiError(400, "Invalid video ID");
+
+    const video = await Video.findById(videoId);
+
+    if (!video) {
+      throw new ApiError(404, "Video not found");
+    }
+
+    if (video.owner.toString() !== req.user._id.toString()) {
+      throw new ApiError(403, "Unauthorized");
+    }
+
+    if (video.videoPublicId) {
+      await deleteFromCloudinary(video.videoPublicId, "video");
+    }
+
+    if (video.thumbnailPublicId) {
+      await deleteFromCloudinary(video.thumbnailPublicId, "images");
+    }
+
+    await video.deleteOne();
+
+    return res
+      .status(200)
+      .json(new ApiResponse(200, {}, "Video deleted successfully"));
+  }
+});
+
+export { publishVideo, getVideoByID, updateVideo, deleteVideo };

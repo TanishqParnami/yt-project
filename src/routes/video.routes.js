@@ -10,7 +10,7 @@ router.route("/").get(getAllVideos);
 router.route("/upload").post(
   verifyJWT,
   upload.fields([
-    { name: "video", maxCount: 1 },
+    { name: "videoFile", maxCount: 1 },
     { name: "thumbnail", maxCount: 1 },
   ]),
   publishVideo

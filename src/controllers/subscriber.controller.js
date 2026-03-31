@@ -165,4 +165,30 @@ const getSubscribedChannel = asyncHandler(async (req, res) => {
   );
 });
 
-export { toggleSubscription, getSubscribedChannel, getUserChannelSubscribers };
+const isSubscribed = asyncHandler(async (req, res) => {
+  const { channelId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(channelId)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid channel ID",
+    });
+  }
+
+  const isSubscribed = await Subscription.exists({
+    channel: channelId,
+    subscriber: req.user._id,
+  });
+
+  return res.status(200).json({
+    success: true,
+    isSubscribed: !!isSubscribed,
+  });
+});
+
+export {
+  toggleSubscription,
+  getSubscribedChannel,
+  getUserChannelSubscribers,
+  isSubscribed,
+};

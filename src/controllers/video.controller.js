@@ -275,4 +275,78 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
   );
 });
 
-export { publishVideo, getVideoByID, updateVideo, deleteVideo, getAllVideos, togglePublishStatus };
+const getMyVideos = asyncHandler(async (req, res) => {
+  const {
+    page = 1,
+    limit = 10,
+    sortBy = "createdAt",
+    sortType = "desc",
+    query,
+    isPublished,
+  } = req.query;
+
+  const pageNum = Math.max(1, Number(page));
+  const limitNum = Math.max(1, Math.min(50, Number(limit)));
+
+  const matchStage = {
+    owner: new mongoose.Types.ObjectId(req.user._id),
+  };
+
+  if (query?.trim()) {
+    matchStage.$or = [
+      { title: { $regex: query.trim(), $options: "i" } },
+      { description: { $regex: query.trim(), $options: "i" } },
+    ];
+  }
+
+  if (isPublished !== undefined) {
+    matchStage.isPublished = isPublished === "true";
+  }
+
+  const allowedSortFields = ["createdAt", "views", "title", "duration"];
+  const sortField = allowedSortFields.includes(sortBy) ? sortBy : "createdAt";
+
+  const sortOrder = sortType === "asc" ? 1 : -1;
+
+  const pipeline = [
+    { $match: matchStage },
+    {
+      $project: {
+        videoFile: 1,
+        thumbnail: 1,
+        title: 1,
+        description: 1,
+        duration: 1,
+        views: 1,
+        isPublished: 1,
+        createdAt: 1,
+      },
+    },
+    { $sort: { [sortField]: sortOrder } },
+  ];
+
+  const videos = await Video.aggregatePaginate(Video.aggregate(pipeline), {
+    page: pageNum,
+    limit: limitNum,
+  });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        videos,
+        videos.docs.length ? "Videos fetched successfully" : "No videos found"
+      )
+    );
+});
+
+export {
+  publishVideo,
+  getVideoByID,
+  updateVideo,
+  deleteVideo,
+  getAllVideos,
+  togglePublishStatus,
+  getMyVideos,
+};

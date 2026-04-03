@@ -99,7 +99,8 @@ const getPlaylistById = asyncHandler(async (req, res) => {
         _id: new mongoose.Types.ObjectId(playlistId),
       },
     },
-    { //videos inside the playlist
+    {
+      //videos inside the playlist
       $lookup: {
         from: "videos",
         localField: "videos",
@@ -111,7 +112,8 @@ const getPlaylistById = asyncHandler(async (req, res) => {
               isPublished: true, //only published videos
             },
           },
-          {//video owners
+          {
+            //video owners
             $lookup: {
               from: "users",
               localField: "owner",
@@ -132,7 +134,8 @@ const getPlaylistById = asyncHandler(async (req, res) => {
             $addFields: { owner: { $first: "$owner" } }, //array to object
           },
           {
-            $project: { //video projections
+            $project: {
+              //video projections
               title: 1,
               description: 1,
               thumbnail: 1,
@@ -145,7 +148,8 @@ const getPlaylistById = asyncHandler(async (req, res) => {
         ],
       },
     },
-    { //user/owner of playlist
+    {
+      //user/owner of playlist
       $lookup: {
         from: "users",
         localField: "owner",

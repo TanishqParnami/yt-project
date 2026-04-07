@@ -119,7 +119,7 @@ const getSubscribedChannel = asyncHandler(async (req, res) => {
   page = Number(page);
   limit = Number(limit);
 
-  totalSubscribed = await Subscription.countDocuments({
+  const totalSubscribed = await Subscription.countDocuments({
     subsriber: userId,
   });
 
@@ -152,6 +152,8 @@ const getSubscribedChannel = asyncHandler(async (req, res) => {
     { $skip: (page - 1) * limit },
     { $limit: limit },
   ]);
+
+  
 
   return res.status(200).json(
     new ApiResponse(200, {

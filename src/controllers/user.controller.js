@@ -491,6 +491,24 @@ const getWatchHistory = asyncHandler(async (req, res) => {
     );
 });
 
+const getAllUsers = asyncHandler(async (req, res) => {
+  const users = await User.find().select("-password -refreshToken");
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, users, "Users fetched successfully"));
+});
+
+const makeAdmin = async (req, res) => {
+  const user = await User.findByIdAndUpdate(
+    req.params.userId,
+    { role: "admin" },
+    { new: true }
+  );
+
+  res.json(user);
+};
+
 export {
   registerUser,
   loginUser,
@@ -503,4 +521,6 @@ export {
   updateUserCoverImage,
   getUserChannelProfile,
   getWatchHistory,
+  getAllUsers,
+  makeAdmin,
 };

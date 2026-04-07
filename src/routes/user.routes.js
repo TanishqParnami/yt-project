@@ -11,9 +11,12 @@ import {
   updateUserCoverImage,
   getUserChannelProfile,
   getWatchHistory,
+  getAllUsers,
+  makeAdmin,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
+import { verifyAdmin } from "../middlewares/admin.middleware.js";
 
 const router = Router();
 
@@ -53,5 +56,9 @@ router
 router.route("/c/:username").get(verifyJWT, getUserChannelProfile);
 //imp
 router.route("/history").get(verifyJWT, getWatchHistory);
+
+router.route("/make-admin/:userId").patch(verifyJWT, verifyAdmin, makeAdmin);
+
+router.route("/").get(verifyJWT, verifyAdmin, getAllUsers);
 
 export default router;

@@ -3,7 +3,7 @@ import { verifyJWT } from "../middlewares/auth.middleware.js";
 import {
   toggleSubscription,
   getUserChannelSubscribers,
-  getSubscribedChannels,
+  getSubscribedChannel,
   isSubscribed,
 } from "../controllers/subscriber.controller.js";
 
@@ -16,7 +16,7 @@ router
   .post(toggleSubscription)
   .get(getUserChannelSubscribers);
 
-router.route("/u/:subscriberId").get(getSubscribedChannels);
+router.route("/u/:subscriberId").get(getSubscribedChannel);
 router.route("/c/:channelId/is-subscribed").get(isSubscribed);
 
 export default router;

@@ -23,6 +23,7 @@ app.use(cookieParser())
 //routes
 import userRouter from './routes/user.routes.js'
 import videoRouter from './routes/video.routes.js'
+import subscriptionRouter from './routes/subscription.routes.js'
 
 //routes declaration
 //app.get( se kaam ho raha tha, as in basic app we were writing rouetes and controllers in here only)
@@ -30,6 +31,7 @@ import videoRouter from './routes/video.routes.js'
 
 app.use("/api/v1/users", userRouter) //jaise hi user ayega, control chala jayega userRouter pe
 app.use("/api/v1/videos", videoRouter)
+app.use("/api/v1/subscription", subscriptionRouter)
 
 //http://localhost:8000/api/v1/users/register
 export { app }

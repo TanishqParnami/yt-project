@@ -2,7 +2,6 @@ import { isValidObjectId, mongoose } from "mongoose";
 import { ApiError } from "../utils/ApiError.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { Subscription } from "../models/subscription.model.js";
-import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
 const toggleSubscription = asyncHandler(async (req, res) => {
@@ -85,7 +84,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
 
     {
       $project: {
-        _id: "subscriber._id",
+        _id: "$subscriber._id",
         username: "$subscriber.username",
         email: "$subscriber.email",
         subscribedAt: "$createdAt",

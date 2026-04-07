@@ -81,6 +81,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 });
 
 const publishVideo = asyncHandler(async (req, res) => {
+  console.log("Upload route hit");
   const { title, description } = req.body;
 
   if (!title || !description) {
@@ -102,7 +103,7 @@ const publishVideo = asyncHandler(async (req, res) => {
   }
 
   const videoUpload = await uploadOnCloudinary(videoLocalPath);
-  const thumbnailUpload = await uploadOnCloudinary(videoLocalPath);
+  const thumbnailUpload = await uploadOnCloudinary(thumbnailLocalPath);
 
   if (!videoUpload?.url) {
     throw new ApiError(500, "Video file upload failed");
@@ -113,6 +114,7 @@ const publishVideo = asyncHandler(async (req, res) => {
 
   const video = await Video.create({
     title: title.trim(),
+    duration: videoUpload.duration,
     description: description,
     videoFile: videoUpload.url,
     thumbnail: thumbnailUpload.url,

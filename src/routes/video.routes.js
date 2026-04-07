@@ -26,6 +26,6 @@ router.route("/v/:videoId").delete(verifyJWT, deleteVideo);
 
 router.route("/v/:videoId/toggle").patch(verifyJWT, togglePublishStatus);
 
-router.route("my-videos").get(verifyJWT, getMyVideos);
+router.route("/my-videos").get(verifyJWT, getMyVideos);
 
 export default router;

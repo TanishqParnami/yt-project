@@ -153,8 +153,6 @@ const getSubscribedChannel = asyncHandler(async (req, res) => {
     { $limit: limit },
   ]);
 
-  
-
   return res.status(200).json(
     new ApiResponse(200, {
       totalSubscribed,
